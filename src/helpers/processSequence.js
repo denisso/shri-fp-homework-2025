@@ -52,7 +52,11 @@ const isStringGt10 = pipe(length, gt(10));
 const isStringLt2 = pipe(length, lt(2));
 const isNumbers = test(/^[0-9]+\.?[0-9]+$/);
 const isValidValue = allPass([isStringGt10, isStringLt2, isNumbers]);
-
+// const isValidValue = allPass([
+//   pipe(length, gt(2)),
+//   pipe(length, lt(10)),
+//   isNumbers
+// ]);
 const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
   const tapLog = tap(writeLog);
   const handlerError = partial(handleError, ["ValidationError"]);
@@ -76,7 +80,10 @@ const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
     getInteger
   );
 
-  pipe(tapLog, ifElse(isValidValue, __processSequence, handlerError))(value);
+  // перехватываем ошибку Network error чтобы отобразить ее в логе
+  const safeRunSequence = (x) => __processSequence(x).catch(handleError);
+
+  pipe(tapLog, ifElse(isValidValue, safeRunSequence, handlerError))(value);
 };
 
 export default processSequence;
